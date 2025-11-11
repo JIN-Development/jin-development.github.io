@@ -1,0 +1,16 @@
+baseURL = "https://jin-development.github.io/"
+languageCode = "en-us"
+title = "JIN Developer Documentation"
+theme = "docdock"
+
+[params]
+  description = "JIN Developer Documentation"
+  
+[outputs]
+  home = ["HTML", "JSON"]
+
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true

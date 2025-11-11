@@ -1,0 +1,51 @@
+# Hugo generated files
+public/
+resources/_gen/
+.hugo_build.lock
+
+# Hugo cache directory
+.cache/
+
+# Temporary lock files
+*.lock
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# Node modules (if using npm/yarn for preprocessing)
+node_modules/
+package-lock.json
+yarn.lock
+
+# Hugo temporary files
+hugo.log
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Build output directories
+dist/
+.output/
+
+# Backups
+*.bak
+*.backup
