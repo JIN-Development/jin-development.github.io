@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Java Reverse Proxy Architecture</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom animation for the flow */
+        @keyframes flow {
+            0% { stroke-dashoffset: 20; }
+            100% { stroke-dashoffset: 0; }
+        }
+        .flow-line {
+            stroke-dasharray: 5;
+            animation: flow 1s linear infinite;
+        }
+        /* Animation for the redirect flow */
+        @keyframes dash {
+            to { stroke-dashoffset: -10; }
+        }
+        .redirect-line {
+            stroke-dasharray: 5, 5;
+            animation: dash 1s linear infinite;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4 font-sans">
+
+    <div class="bg-white p-4 md:p-8 rounded-xl shadow-xl w-full max-w-5xl border border-gray-200">
+        <div class="mb-6 text-center">
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-800">Java Reverse Proxy Architecture</h1>
+            <p class="text-gray-500 mt-2">Azure VM Infrastructure with Nginx & Tomcat</p>
+        </div>
+
+        <div class="w-full overflow-x-auto flex justify-center bg-gray-50 rounded-lg border border-gray-100 p-4">
+            <!-- SVG Diagram -->
+            <svg viewBox="0 0 900 600" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto max-w-[900px]">
+                <!-- Definitions for markers -->
+                <defs>
+                    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#1e1e1e" />
+                    </marker>
+                    <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#1971c2" />
+                    </marker>
+                    <marker id="arrowhead-pink" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#be4bdb" />
+                    </marker>
+                </defs>
+
+                <!-- Azure VM Boundary -->
+                <rect x="280" y="50" width="580" height="500" rx="10" 
+                      fill="#f8f9fa" stroke="#1971c2" stroke-width="2" stroke-dasharray="10,5" opacity="0.5"/>
+                <text x="850" y="80" font-family="Arial, sans-serif" font-size="16" fill="#1971c2" text-anchor="end" font-weight="bold">Azure VM</text>
+
+                <!-- Internet Cloud -->
+                <g transform="translate(130, 300)">
+                    <circle cx="0" cy="0" r="40" fill="#e9ecef" stroke="#1e1e1e" stroke-width="2"/>
+                    <ellipse cx="0" cy="0" rx="20" ry="40" fill="none" stroke="#1e1e1e" stroke-width="2"/>
+                    <line x1="-40" y1="0" x2="40" y2="0" stroke="#1e1e1e" stroke-width="2"/>
+                    <line x1="0" y1="-40" x2="0" y2="40" stroke="#1e1e1e" stroke-width="2"/>
+                    <text x="0" y="60" font-family="Arial, sans-serif" font-size="16" text-anchor="middle" font-weight="bold" fill="#333">Internet</text>
+                </g>
+
+                <!-- Connections -->
+                
+                <!-- HTTP -> Redirect -> HTTPS Flow -->
+                <g font-family="Arial, sans-serif" font-size="11">
+                    <!-- 1. HTTP Request (User -> Nginx) -->
+                    <path d="M 160 275 L 320 175" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arrowhead)" />
+                    <rect x="200" y="205" width="70" height="20" rx="4" fill="#fff" stroke="#ccc" opacity="0.9"/>
+                    <text x="235" y="219" fill="#333" text-anchor="middle" font-weight="bold">1. HTTP:80</text>
+
+                    <!-- 2. 301 Redirect (Nginx -> User) -->
+                    <path d="M 320 195 L 170 295" stroke="#be4bdb" stroke-width="2" class="redirect-line" marker-end="url(#arrowhead-pink)" />
+                    <rect x="230" y="240" width="80" height="20" rx="4" fill="#fff" stroke="#be4bdb" opacity="0.9"/>
+                    <text x="270" y="254" fill="#be4bdb" text-anchor="middle" font-weight="bold">2. 301 Redirect</text>
+
+                    <!-- 3. HTTPS Request (User -> Nginx) -->
+                    <path d="M 160 315 L 320 215" stroke="#1971c2" stroke-width="2" marker-end="url(#arrowhead-blue)" />
+                    <rect x="200" y="275" width="80" height="20" rx="4" fill="#fff" stroke="#1971c2" opacity="0.9"/>
+                    <text x="240" y="289" fill="#1971c2" text-anchor="middle" font-weight="bold">3. HTTPS:443</text>
+                </g>
+
+                <!-- Internet to Bastion (SSH) -->
+                <line x1="180" y1="340" x2="330" y2="450" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arrowhead)" />
+                <rect x="200" y="390" width="70" height="25" rx="4" fill="#fff" stroke="#ccc" />
+                <text x="235" y="407" font-family="Arial, sans-serif" font-size="12" fill="#444" text-anchor="middle" font-weight="bold">Port 22</text>
+
+                <!-- Nginx to Tomcat -->
+                <line x1="530" y1="200" x2="630" y2="200" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arrowhead)" />
+                <rect x="555" y="188" width="50" height="24" rx="4" fill="#fff" stroke="#ccc" />
+                <text x="580" y="205" font-family="Arial, sans-serif" font-size="12" fill="#444" text-anchor="middle" font-weight="bold">8080</text>
+
+                <!-- Bastion to Internal (Split Arrow) -->
+                <g>
+                    <!-- Connection to Nginx (Straight Up) -->
+                    <path d="M 430 400 L 430 260" stroke="#1971c2" stroke-width="2" marker-end="url(#arrowhead-blue)" fill="none" class="flow-line"/>
+                    
+                    <!-- Connection to Tomcat (Curve Right) -->
+                    <!-- Curve starts at 430,400, uses 730,400 as control point to curve to 730,260 -->
+                    <path d="M 430 400 Q 730 400 730 260" stroke="#1971c2" stroke-width="2" marker-end="url(#arrowhead-blue)" fill="none" class="flow-line"/>
+                    
+                    <rect x="440" y="360" width="100" height="20" rx="4" fill="#fff" stroke="none" opacity="0.8" />
+                    <text x="490" y="375" font-family="Arial, sans-serif" font-size="12" fill="#1971c2" font-style="italic" text-anchor="middle">Internal Access</text>
+                </g>
+
+                <!-- Reverse Proxy (Nginx) -->
+                <g class="hover:opacity-90 transition-opacity cursor-pointer">
+                    <rect x="330" y="150" width="200" height="100" rx="8" fill="#a5d8ff" stroke="#1e1e1e" stroke-width="2" />
+                    <text x="430" y="195" font-family="Arial, sans-serif" font-size="18" fill="#1e1e1e" text-anchor="middle" font-weight="bold">Reverse Proxy</text>
+                    <text x="430" y="220" font-family="Arial, sans-serif" font-size="16" fill="#1e1e1e" text-anchor="middle">(Nginx)</text>
+                </g>
+
+                <!-- App Server (Tomcat) -->
+                <g class="hover:opacity-90 transition-opacity cursor-pointer">
+                    <rect x="630" y="150" width="200" height="100" rx="8" fill="#d0ebff" stroke="#1e1e1e" stroke-width="2" />
+                    <text x="730" y="195" font-family="Arial, sans-serif" font-size="18" fill="#1e1e1e" text-anchor="middle" font-weight="bold">App Server</text>
+                    <text x="730" y="220" font-family="Arial, sans-serif" font-size="16" fill="#1e1e1e" text-anchor="middle">(Tomcat)</text>
+                </g>
+
+                <!-- Bastion Host -->
+                <g class="hover:opacity-90 transition-opacity cursor-pointer">
+                    <rect x="330" y="400" width="200" height="100" rx="8" fill="#ffc9c9" stroke="#1e1e1e" stroke-width="2" />
+                    <text x="430" y="445" font-family="Arial, sans-serif" font-size="18" fill="#1e1e1e" text-anchor="middle" font-weight="bold">Bastion Host</text>
+                    <text x="430" y="470" font-family="Arial, sans-serif" font-size="16" fill="#1e1e1e" text-anchor="middle">(fail2ban)</text>
+                </g>
+            </svg>
+        </div>
+
+        <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="p-4 bg-blue-50 rounded border border-blue-100">
+                <h3 class="font-bold text-blue-800">1. Entry Point</h3>
+                <p class="text-sm text-gray-600 mt-1">Nginx handles all external HTTP/HTTPS traffic, providing security and load balancing capabilities.</p>
+            </div>
+            <div class="p-4 bg-blue-50 rounded border border-blue-100">
+                <h3 class="font-bold text-blue-800">2. Application Logic</h3>
+                <p class="text-sm text-gray-600 mt-1">Tomcat runs the Java application logic in a protected internal environment, receiving forwarded requests.</p>
+            </div>
+            <div class="p-4 bg-red-50 rounded border border-red-100">
+                <h3 class="font-bold text-red-800">3. Secure Admin</h3>
+                <p class="text-sm text-gray-600 mt-1">A dedicated Bastion host allows SSH access, segregating management traffic from user traffic.</p>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
