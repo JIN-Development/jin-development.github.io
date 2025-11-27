@@ -1,0 +1,9 @@
+<figure{{ with .Get "class" }} class="{{ . }}"{{ else }} class="center"{{ end }}>
+  <img src="/images/diagrams/{{ .Get "src" }}"
+       alt="{{ if .Get "alt" }}{{ .Get "alt" }}{{ else }}{{ .Get "title" }}{{ end }}" />
+  {{ with .Get "title" }}
+  <figcaption>
+    <h4>{{ . }}</h4>
+  </figcaption>
+  {{ end }}
+</figure>
